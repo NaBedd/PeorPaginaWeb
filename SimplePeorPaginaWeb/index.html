@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GlobalCorp Solutions | Portal de Empleo</title>
+<meta name="description" content="Postúlese a las vacantes de GlobalCorp Solutions a través de nuestro moderno portal de aplicaciones en línea." />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="thiefBox">
+    <img id="thiefImg" alt="ladrón" />
+    <button id="muteBtn" type="button">🔊 Silenciar</button>
+  </div>
+  <div id="evilLayer"></div>
+  <div id="evilCounter">Cursores enemigos activos: 1</div>
+
+  <div id="spinnerOverlay">
+    <div class="giant-spinner"></div>
+    <div class="spinner-text">Preparando el análisis…</div>
+  </div>
+
+  <header>
+    <div class="brand">GlobalCorp Solutions S.A.</div>
+    <div class="sub">Portal Corporativo de Reclutamiento y Selección — Formulario 27-B/6</div>
+  </header>
+
+  <main>
+    <!-- 1 -->
+    <section class="panel">
+      <h2>1. Carga de Currículum</h2>
+      <label class="lbl" for="cv">Adjunte su CV (formato PDF, máx. 2MB)</label>
+      <input id="cv" type="file" hidden />
+      <button id="uploadBtn" type="button" class="big-blue">SUBIR CV EN PDF</button>
+
+      <div id="barWrap" hidden>
+        <div class="bar"><div id="barFill"></div></div>
+        <div id="barText" class="lbl"></div>
+      </div>
+
+      <div id="resultBox" hidden>
+        <div class="ok">✔ CV procesado con IA</div>
+        <div class="err">Error procesando el PDF. Por favor, ingrese toda su historia laboral manualmente.</div>
+        <textarea id="history" rows="6"></textarea>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="panel">
+      <h2>2. Datos Personales</h2>
+      <div class="field">
+        <label class="lbl">Nombre completo</label>
+        <input id="name" />
+      </div>
+      <div class="field">
+        <label class="lbl">Fecha de nacimiento</label>
+        <input id="birth" readonly placeholder="Seleccione con el calendario" class="pointer" />
+        <div id="calendar" hidden>
+          <div class="cal-row">
+            <button id="prevMonth" type="button" class="mini">&lt;</button>
+            <span id="monthLabel"></span>
+          </div>
+          <div class="cal-row">
+            <button id="prevDay" type="button" class="mini">&lt;</button>
+            <button id="dayBtn" type="button" class="daybtn"></button>
+          </div>
+          <p class="hint">Use "&lt;" para retroceder mes a mes y día a día. Haga clic en el número para confirmar.</p>
+        </div>
+      </div>
+      <div class="field">
+        <label class="lbl">País de residencia (ordenado por PIB)</label>
+        <select id="country"><option value="">-- Seleccione --</option></select>
+      </div>
+      <div class="field">
+        <label class="lbl">Teléfono de contacto</label>
+        <input id="phone" value="000-000-0000" />
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="panel">
+      <h2>3. Habilidades</h2>
+      <label class="lbl">Añadir habilidad</label>
+      <input id="skillDraft" />
+      <div id="keyboard"></div>
+      <ul id="skillList"></ul>
+    </section>
+
+    <!-- 4 -->
+    <section class="panel">
+      <h2>4. Carta de Presentación</h2>
+      <label class="lbl">Cuéntenos por qué desea trabajar con nosotros (máx. 50 caracteres)</label>
+      <textarea id="letter" rows="2" class="nowrap"></textarea>
+      <div id="letterCount" class="lbl">0/50 caracteres</div>
+    </section>
+
+    <!-- 5 -->
+    <section class="panel actions">
+      <button id="bigGreen" type="button">Enviar Formulario</button>
+      <button id="tinyGray" type="button">Borrar formulario</button>
+    </section>
+
+    <footer>© GlobalCorp Solutions S.A. — Todos los derechos reservados. Formulario 27-B/6 rev. 14.</footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
