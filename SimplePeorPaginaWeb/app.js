@@ -2,127 +2,238 @@
 (function () {
   "use strict";
 
-  var COUNTRIES_BY_GDP = ["Estados Unidos","China","Alemania","Japón","India","Reino Unido","Francia","Italia","Brasil","Canadá","Rusia","México","Australia","Corea del Sur","España","Indonesia","Países Bajos","Turquía","Arabia Saudita","Suiza","Polonia","Taiwán","Bélgica","Argentina","Suecia","Irlanda","Noruega","Austria","Israel","Tailandia","Singapur","Emiratos Árabes Unidos","Filipinas","Vietnam","Bangladesh","Malasia","Dinamarca","Sudáfrica","Hong Kong","Egipto","Colombia","Chile","Finlandia","Rumanía","República Checa","Portugal","Perú","Nueva Zelanda","Grecia","Kazajistán"];
-
+  var COUNTRIES_BY_GDP = ["Estados Unidos","China","Alemania","Japón","India","Reino Unido","Francia","Italia","Brasil","Canadá","Rusia","México","Australia","Corea del Sur","España","Indonesia","Países Bajos","Turquía","Arabia Saudita","Suiza","Polonia","Taiwán","Bélgica","Argentina","Suecia","Irlanda","Noruega","Austria","Israel","Tailandia","Singapur","Emiratos Árabes Unidos","Filipinas","Vietnam","Bangladesh","Malasia","Dinamarca","Sudáfrica","Hong Kong","Egipto","Colombia","Chile","Finlandia","Rumanía","República Checa","Portugal","Perú","Nueva Zelanda","Grecia","Kazajistán","Venezuela"];
   var MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
   var LETTERS = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ".split("");
-  function shuffle(arr) {
+  var DIGITS = "0123456789".split("");
+  var BG_SONG_SRC = "bg-song.mp4";
 
+  function shuffle(arr) {
     var a = arr.slice();
     for (var i = a.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
-      var t = a[i]; a[i] = a[j]; a[j] = t;
+      var t = a[i];
+      a[i] = a[j];
+      a[j] = t;
     }
     return a;
   }
-  var mouse = { x: 0, y: 0 };
 
-  window.addEventListener("mousemove", function (e) { mouse.x = e.clientX; mouse.y = e.clientY; });
-  /* ---------- Sección 6: música de ascensor ---------- */
-
-  var muted = false, gainNode = null, started = false;
-  function startMusic() {
-    if (started) return;
-    started = true;
-
-    
-
-    var Ctx = window.AudioContext || window.webkitAudioContext;
-    var ctx = new Ctx();
-    gainNode = ctx.createGain();
-    gainNode.gain.value = muted ? 0 : 0.07;
-    gainNode.connect(ctx.destination);
-    var melody = [523.25, 587.33, 659.25, 587.33, 523.25, 440, 493.88, 523.25];
-    var i = 0;
-    function note() {
-      var osc = ctx.createOscillator();
-      var g = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = melody[i % melody.length];
-      g.gain.setValueAtTime(0.0001, ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(1, ctx.currentTime + 0.05);
-      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.55);
-      osc.connect(g); g.connect(gainNode);
-      osc.start(); osc.stop(ctx.currentTime + 0.6);
-      i++;
-    }
-    note();
-    setInterval(note, 620);
+  function preventTyping(e) {
+    e.preventDefault();
   }
-  ["pointerdown", "keydown", "mousemove"].forEach(function (ev) {
-    window.addEventListener(ev, startMusic);
+
+  function lockField(el) {
+    el.readOnly = true;
+    el.setAttribute("inputmode", "none");
+    el.addEventListener("keydown", preventTyping);
+    el.addEventListener("paste", preventTyping);
+    el.addEventListener("beforeinput", preventTyping);
+  }
+
+  function appendValue(el, value) {
+    el.value += value;
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  function removeLastValue(el) {
+    el.value = el.value.slice(0, -1);
+    el.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  function createShufflingKeyboard(inputEl, keyboardEl, options) {
+    var keys = options.keys.slice();
+    var extras = options.extras || [];
+    var onChange = options.onChange || function () {};
+
+    lockField(inputEl);
+
+    function render() {
+      keyboardEl.innerHTML = "";
+
+      keys.forEach(function (key) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.textContent = key;
+        button.addEventListener("click", function () {
+          appendValue(inputEl, key);
+          keys = shuffle(keys);
+          onChange(inputEl.value);
+          render();
+        });
+        keyboardEl.appendChild(button);
+      });
+
+      extras.forEach(function (extra) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.textContent = extra.label;
+        button.className = extra.className || "";
+        button.addEventListener("click", function () {
+          extra.action(inputEl);
+          keys = shuffle(keys);
+          onChange(inputEl.value);
+          render();
+        });
+        keyboardEl.appendChild(button);
+      });
+    }
+
+    render();
+  }
+
+  var mouse = { x: 0, y: 0 };
+  window.addEventListener("mousemove", function (e) {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+
+  /* ---------- Sección 6: canción de fondo del programador ---------- */
+  var bgVideo = document.getElementById("bgVideo");
+  var bgSongStarted = false;
+  bgVideo.src = BG_SONG_SRC;
+  bgVideo.loop = true;
+  bgVideo.autoplay = true;
+  bgVideo.playsInline = true;
+  bgVideo.preload = "auto";
+  bgVideo.muted = false;
+  bgVideo.volume = 1;
+
+  function tryPlayBackgroundSong() {
+    if (bgSongStarted || !bgVideo.src) return;
+    var playPromise = bgVideo.play();
+    if (playPromise && typeof playPromise.catch === "function") {
+      playPromise.then(function () {
+        bgSongStarted = true;
+      }).catch(function () {});
+    } else {
+      bgSongStarted = true;
+    }
+  }
+
+  ["pointerdown", "keydown", "click"].forEach(function (eventName) {
+    window.addEventListener(eventName, tryPlayBackgroundSong, true);
   });
 
   /* ---------- Sección 6: el ladrón roba el botón de silencio ---------- */
-  var thiefBox = document.getElementById("thiefBox");
-  var thiefImg = document.getElementById("thiefImg");
-  var muteBtn = document.getElementById("muteBtn");
-  thiefImg.src = THIEF_SRC;
-  thiefBox.style.left = (window.innerWidth - 170) + "px";
+  var muteContainer = document.getElementById("mute-container");
+  var thiefImg = document.getElementById("thief-img");
+  var muteBtn = document.getElementById("mute-btn");
+  var muted = false;
   var fleeing = false;
+
+  thiefImg.src = "img/thief.png";
+
+  function updateMuteLabel() {
+    muteBtn.textContent = muted ? "🔊 Activar canción" : "🔇 Silenciar canción";
+  }
+
+  function placeThief(x, y) {
+    muteContainer.style.left = Math.max(0, x) + "px";
+    muteContainer.style.top = Math.max(0, y) + "px";
+  }
+
+  function positionThiefInitial() {
+    var rect = muteContainer.getBoundingClientRect();
+    placeThief(window.innerWidth - rect.width - 20, 20);
+  }
 
   muteBtn.addEventListener("click", function () {
     muted = !muted;
-    if (gainNode) gainNode.gain.value = muted ? 0 : 0.07;
-    muteBtn.textContent = "🔊 " + (muted ? "Activar" : "Silenciar");
+    bgVideo.muted = muted;
+    updateMuteLabel();
+    tryPlayBackgroundSong();
   });
+
+  updateMuteLabel();
+  positionThiefInitial();
 
   setInterval(function () {
     if (fleeing) return;
-    var r = thiefBox.getBoundingClientRect();
+
+    var r = muteContainer.getBoundingClientRect();
     var cx = Math.max(r.left, Math.min(mouse.x, r.right));
     var cy = Math.max(r.top, Math.min(mouse.y, r.bottom));
-    if (Math.hypot(mouse.x - cx, mouse.y - cy) < 50) {
+    var dx = mouse.x - cx;
+    var dy = mouse.y - cy;
+    var distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance < 50) {
       fleeing = true;
-      thiefBox.classList.add("fleeing");
+      muteContainer.classList.add("fleeing");
+
+      var moveX = dx === 0 && dy === 0 ? (Math.random() < 0.5 ? -1 : 1) : dx / distance;
+      var moveY = dx === 0 && dy === 0 ? (Math.random() < 0.5 ? -1 : 1) : dy / distance;
+      var newLeft = r.left - moveX * 420;
+      var newTop = r.top - moveY * 420;
+
+      if (newLeft < 0) newLeft = 20;
+      if (newTop < 0) newTop = 20;
+      if (newLeft > window.innerWidth - r.width) newLeft = window.innerWidth - r.width - 20;
+      if (newTop > window.innerHeight - r.height) newTop = window.innerHeight - r.height - 20;
+
       setTimeout(function () {
-        thiefBox.style.left = Math.random() * Math.max(50, window.innerWidth - 220) + "px";
-        thiefBox.style.top = Math.random() * Math.max(50, window.innerHeight - 120) + "px";
+        placeThief(newLeft, newTop);
         setTimeout(function () {
           fleeing = false;
-          thiefBox.classList.remove("fleeing");
-        }, 350);
-      }, 120);
+          muteContainer.classList.remove("fleeing");
+        }, 200);
+      }, 60);
     }
   }, 40);
 
-  /* ---------- Sección 7: enjambre de cursores malvados ---------- */
-  var layer = document.getElementById("evilLayer");
-  var counter = document.getElementById("evilCounter");
-  var evils = [{ x: 40, y: 40, touching: false }];
+  /* ---------- Sección 1: cursor malvado duplicable ---------- */
+  var evilCounter = document.getElementById("evilCounter");
+  var evilCursors = [];
 
-  (function loop() {
-    var spawned = [];
-    for (var i = 0; i < evils.length; i++) {
-      var e = evils[i];
-      var dx = mouse.x - e.x, dy = mouse.y - e.y;
-      var d = Math.hypot(dx, dy) || 1;
-      e.x += (dx / d) * 2.2;
-      e.y += (dy / d) * 2.2;
-      if (d < 8) {
-        // Solo se duplica en el instante del contacto
-        if (!e.touching) {
-          e.touching = true;
-          spawned.push({ x: e.x + (Math.random() * 40 - 20), y: e.y + (Math.random() * 40 - 20), touching: true });
-        }
-      } else if (d > 60) {
-        e.touching = false;
+  function updateEvilCounter() {
+    evilCounter.textContent = "Cursores enemigos activos: " + evilCursors.length;
+  }
+
+  function createEvilCursor(x, y) {
+    var evil = document.createElement("img");
+    var variant = Math.floor(Math.random() * 4) + 1;
+    evil.src = "img/cursor-malvado" + variant + ".png";
+    evil.alt = "";
+    evil.className = "evil-cursor";
+    evil.style.left = x + "px";
+    evil.style.top = y + "px";
+    document.body.appendChild(evil);
+    evilCursors.push({
+      element: evil,
+      x: x,
+      y: y,
+      speed: Math.random() * 2 + 1.5
+    });
+    updateEvilCounter();
+  }
+
+  createEvilCursor(0, 0);
+
+  function updateEvilCursors() {
+    for (var i = 0; i < evilCursors.length; i++) {
+      var cursor = evilCursors[i];
+      var dx = mouse.x - cursor.x;
+      var dy = mouse.y - cursor.y;
+      var distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance > 0) {
+        cursor.x += (dx / distance) * cursor.speed;
+        cursor.y += (dy / distance) * cursor.speed;
+      }
+
+      cursor.element.style.left = cursor.x + "px";
+      cursor.element.style.top = cursor.y + "px";
+
+      if (distance < 15) {
+        createEvilCursor(cursor.x - (Math.random() * 40 - 20), cursor.y - (Math.random() * 40 - 20));
       }
     }
-    if (spawned.length) {
-      evils = evils.concat(spawned);
-      counter.textContent = "Cursores enemigos activos: " + evils.length;
-    }
-    while (layer.childElementCount < evils.length) {
-      var el = document.createElement("div");
-      el.className = "evil";
-      layer.appendChild(el);
-    }
-    for (var k = 0; k < evils.length; k++) {
-      layer.children[k].style.transform = "translate(" + evils[k].x + "px," + evils[k].y + "px)";
-    }
-    requestAnimationFrame(loop);
-  })();
+
+    requestAnimationFrame(updateEvilCursors);
+  }
+
+  updateEvilCursors();
 
   /* ---------- Sección 1: engaño del CV ---------- */
   var cv = document.getElementById("cv");
@@ -132,36 +243,44 @@
   var barFill = document.getElementById("barFill");
   var barText = document.getElementById("barText");
   var resultBox = document.getElementById("resultBox");
+  var history = document.getElementById("history");
   var busy = false;
+  var progressTimer = null;
+  var finishTimer = null;
 
-  uploadBtn.addEventListener("click", function () { cv.click(); });
-  cv.addEventListener("change", function () {
-    if (busy || !cv.files || !cv.files.length) return; // espera a que elija archivo
+  function startFakeCvProgress() {
+    if (busy) return;
     busy = true;
     resultBox.hidden = true;
-    barWrap.hidden = true;
-    overlay.classList.add("on");           // rueda gigante: 5 segundos
-    setTimeout(function () {
-      overlay.classList.remove("on");
-      barWrap.hidden = false;
-      var t0 = Date.now();
-      var id = setInterval(function () {
-        var el = Date.now() - t0, p;
-        if (el < 4000) p = (el / 4000) * 47;
-        else if (el < 7000) p = 47;        // pausa visual: parece congelado
-        else p = 47 + ((el - 7000) / 3000) * 53;
-        p = Math.min(100, p);
-        barFill.style.width = p + "%";
-        barText.textContent = Math.floor(p) + "% — Analizando documento con inteligencia artificial…";
-        if (el >= 10000) {                 // 10 segundos en total
-          clearInterval(id);
-          barFill.style.width = "100%";
-          barText.textContent = "100% — Analizando documento con inteligencia artificial…";
-          resultBox.hidden = false;
-          busy = false;
-        }
-      }, 80);
-    }, 5000);
+    history.value = "";
+    barWrap.hidden = false;
+    barFill.style.width = "0%";
+    barText.textContent = "0% — Analizando documento con inteligencia artificial…";
+
+    var startedAt = Date.now();
+    progressTimer = setInterval(function () {
+      var elapsed = Date.now() - startedAt;
+      var progress = Math.min(100, elapsed / 80);
+      barFill.style.width = progress + "%";
+      barText.textContent = Math.floor(progress) + "% — Analizando documento con inteligencia artificial…";
+    }, 40);
+
+    finishTimer = setTimeout(function () {
+      clearInterval(progressTimer);
+      barFill.style.width = "100%";
+      barText.textContent = "100% — Analizando documento con inteligencia artificial…";
+      resultBox.hidden = false;
+      busy = false;
+    }, 8000);
+  }
+
+  uploadBtn.addEventListener("click", function () {
+    cv.click();
+    startFakeCvProgress();
+  });
+
+  cv.addEventListener("change", function () {
+    startFakeCvProgress();
   });
 
   /* ---------- Sección 2: datepicker hostil ---------- */
@@ -170,21 +289,24 @@
   var monthLabel = document.getElementById("monthLabel");
   var dayBtn = document.getElementById("dayBtn");
   var now = new Date();
-  var month = now.getMonth(), year = now.getFullYear();
+  var month = now.getMonth();
+  var year = now.getFullYear();
   var day = new Date(year, month + 1, 0).getDate();
 
   function renderCal() {
     monthLabel.textContent = MONTHS[month] + " " + year;
     dayBtn.textContent = day;
   }
+
   renderCal();
 
-  birth.addEventListener("keydown", function (e) { e.preventDefault(); });
+  birth.addEventListener("keydown", preventTyping);
   birth.addEventListener("click", function () { calendar.hidden = !calendar.hidden; });
   document.getElementById("prevMonth").addEventListener("click", function () {
     var m = month === 0 ? 11 : month - 1;
     var y = month === 0 ? year - 1 : year;
-    month = m; year = y;
+    month = m;
+    year = y;
     day = new Date(y, m + 1, 0).getDate();
     renderCal();
   });
@@ -201,79 +323,88 @@
   var country = document.getElementById("country");
   COUNTRIES_BY_GDP.forEach(function (c) {
     var o = document.createElement("option");
-    o.value = c; o.textContent = c;
+    o.value = c;
+    o.textContent = c;
     country.appendChild(o);
   });
 
-  /* ---------- Sección 2: teléfono que nunca se borra solo ---------- */
+  /* ---------- Sección 2: teléfono con teclado digital ---------- */
   var phone = document.getElementById("phone");
-  var phoneValue = "000-000-0000";
-  function toEnd() { phone.setSelectionRange(phone.value.length, phone.value.length); }
-  phone.addEventListener("click", toEnd);
-  phone.addEventListener("focus", toEnd);
-  phone.addEventListener("input", function () {
-    var next = phone.value;
-    if (next.length > phoneValue.length) {
-      var added = next.length - phoneValue.length, typed = "";
-      for (var i = 0; i < next.length; i++) {
-        if (phoneValue[i] !== next[i]) { typed = next.slice(i, i + added); break; }
-      }
-      phoneValue = phoneValue + typed;   // todo se añade SIEMPRE al final
-    } else {
-      phoneValue = next;
-    }
-    phone.value = phoneValue;
-    toEnd();
+  var phoneKeyboard = document.getElementById("phoneKeyboard");
+  createShufflingKeyboard(phone, phoneKeyboard, {
+    keys: DIGITS.concat(["-"]),
+    extras: [
+      { label: "BORRAR", className: "wide", action: function (el) { removeLastValue(el); } }
+    ]
   });
 
   /* ---------- Sección 3: teclado virtual que se baraja ---------- */
   var skillDraft = document.getElementById("skillDraft");
-  var keyboard = document.getElementById("keyboard");
+  var skillKeyboard = document.getElementById("skillKeyboard");
   var skillList = document.getElementById("skillList");
-  var keys = LETTERS.slice();
   var skills = [];
-  skillDraft.addEventListener("keydown", function (e) { e.preventDefault(); });
 
-  function renderKeyboard() {
-    keyboard.innerHTML = "";
-    keys.forEach(function (k) {
-      var b = document.createElement("button");
-      b.type = "button"; b.textContent = k;
-      b.addEventListener("click", function () {
-        skillDraft.value += k;
-        keys = shuffle(keys);   // trampa: todas las letras cambian de sitio
-        renderKeyboard();
-      });
-      keyboard.appendChild(b);
-    });
-    [["ESPACIO", "wide", function () { skillDraft.value += " "; }],
-     ["BORRAR", "wide", function () { skillDraft.value = skillDraft.value.slice(0, -1); }],
-     ["AÑADIR", "wider", function () {
-        if (skillDraft.value.trim()) { skills.push(skillDraft.value.trim()); renderSkills(); }
-        skillDraft.value = "";
-     }]].forEach(function (cfg) {
-      var b = document.createElement("button");
-      b.type = "button"; b.textContent = cfg[0]; b.className = cfg[1];
-      b.addEventListener("click", function () { cfg[2](); keys = shuffle(keys); renderKeyboard(); });
-      keyboard.appendChild(b);
-    });
-  }
+  createShufflingKeyboard(skillDraft, skillKeyboard, {
+    keys: LETTERS.slice(),
+    extras: [
+      { label: "ESPACIO", className: "wide", action: function (el) { appendValue(el, " "); } },
+      { label: "BORRAR", className: "wide", action: function (el) { removeLastValue(el); } },
+      {
+        label: "AÑADIR",
+        className: "wider",
+        action: function (el) {
+          if (el.value.trim()) {
+            skills.push(el.value.trim());
+            renderSkills();
+          }
+          el.value = "";
+        }
+      }
+    ]
+  });
+
   function renderSkills() {
     skillList.innerHTML = "";
     skills.forEach(function (s) {
-      var li = document.createElement("li"); li.textContent = s; skillList.appendChild(li);
+      var li = document.createElement("li");
+      li.textContent = s;
+      skillList.appendChild(li);
     });
   }
-  renderKeyboard();
 
-  /* ---------- Sección 4: la carta se come a sí misma ---------- */
+  /* ---------- Sección 4: carta con teclado digital ---------- */
   var letter = document.getElementById("letter");
   var letterCount = document.getElementById("letterCount");
+  var letterKeyboard = document.getElementById("letterKeyboard");
+
+  createShufflingKeyboard(letter, letterKeyboard, {
+    keys: LETTERS.slice(),
+    extras: [
+      { label: "ESPACIO", className: "wide", action: function (el) { appendValue(el, " "); } },
+      { label: "BORRAR", className: "wide", action: function (el) { removeLastValue(el); } },
+      { label: "SALTO", className: "wide", action: function (el) { appendValue(el, "\n"); } }
+    ],
+    onChange: function (value) {
+      while (value.length > 50) value = value.slice(1);
+      letter.value = value;
+      letterCount.textContent = value.length + "/50 caracteres";
+    }
+  });
+
   letter.addEventListener("input", function () {
-    var t = letter.value;
-    while (t.length > 50) t = t.slice(1);   // borra el PRIMER carácter
-    letter.value = t;
-    letterCount.textContent = t.length + "/50 caracteres";
+    while (letter.value.length > 50) letter.value = letter.value.slice(1);
+    letterCount.textContent = letter.value.length + "/50 caracteres";
+  });
+
+  /* ---------- Sección 4: historial con teclado digital ---------- */
+  var historyKeyboard = document.getElementById("historyKeyboard");
+  createShufflingKeyboard(history, historyKeyboard, {
+    keys: LETTERS.slice(),
+    extras: [
+      { label: "ESPACIO", className: "wide", action: function (el) { appendValue(el, " "); } },
+      { label: "BORRAR", className: "wide", action: function (el) { removeLastValue(el); } },
+      { label: "SALTO", className: "wide", action: function (el) { appendValue(el, "\n"); } }
+    ]
   });
 
   /* ---------- Sección 5: jerarquía invertida ---------- */
@@ -289,13 +420,31 @@
     document.getElementById("name").value = "";
     birth.value = "";
     country.value = "";
-    phoneValue = "000-000-0000"; phone.value = phoneValue;
-    skillDraft.value = ""; skills = []; renderSkills();
-    letter.value = ""; letterCount.textContent = "0/50 caracteres";
-    document.getElementById("history").value = "";
-    barFill.style.width = "0%"; barWrap.hidden = true; resultBox.hidden = true;
+    phone.value = "000-000-0000";
+    skills = [];
+    renderSkills();
+    skillDraft.value = "";
+    letter.value = "";
+    letterCount.textContent = "0/50 caracteres";
+    history.value = "";
+    barFill.style.width = "0%";
+    barWrap.hidden = true;
+    resultBox.hidden = true;
   });
+
   tinyGray.addEventListener("click", function () {
     window.alert("Su solicitud ha sido enviada al vacío.");
   });
+
+  /* ---------- Nombre con teclado digital ---------- */
+  var nameInput = document.getElementById("name");
+  var nameKeyboard = document.getElementById("nameKeyboard");
+  createShufflingKeyboard(nameInput, nameKeyboard, {
+    keys: LETTERS.slice(),
+    extras: [
+      { label: "ESPACIO", className: "wide", action: function (el) { appendValue(el, " "); } },
+      { label: "BORRAR", className: "wide", action: function (el) { removeLastValue(el); } }
+    ]
+  });
+
 })();

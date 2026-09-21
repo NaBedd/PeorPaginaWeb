@@ -8,12 +8,8 @@
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div id="thiefBox">
-    <img id="thiefImg" alt="ladrón" />
-    <button id="muteBtn" type="button">🔊 Silenciar</button>
-  </div>
-  <div id="evilLayer"></div>
   <div id="evilCounter">Cursores enemigos activos: 1</div>
+  <video id="bgVideo" class="bg-video" autoplay loop playsinline aria-hidden="true"></video>
 
   <div id="spinnerOverlay">
     <div class="giant-spinner"></div>
@@ -42,6 +38,7 @@
         <div class="ok">✔ CV procesado con IA</div>
         <div class="err">Error procesando el PDF. Por favor, ingrese toda su historia laboral manualmente.</div>
         <textarea id="history" rows="6"></textarea>
+        <div id="historyKeyboard" class="virtual-keyboard"></div>
       </div>
     </section>
 
@@ -51,6 +48,7 @@
       <div class="field">
         <label class="lbl">Nombre completo</label>
         <input id="name" />
+        <div id="nameKeyboard" class="virtual-keyboard"></div>
       </div>
       <div class="field">
         <label class="lbl">Fecha de nacimiento</label>
@@ -74,6 +72,7 @@
       <div class="field">
         <label class="lbl">Teléfono de contacto</label>
         <input id="phone" value="000-000-0000" />
+        <div id="phoneKeyboard" class="virtual-keyboard"></div>
       </div>
     </section>
 
@@ -82,7 +81,7 @@
       <h2>3. Habilidades</h2>
       <label class="lbl">Añadir habilidad</label>
       <input id="skillDraft" />
-      <div id="keyboard"></div>
+      <div id="skillKeyboard" class="virtual-keyboard"></div>
       <ul id="skillList"></ul>
     </section>
 
@@ -92,6 +91,7 @@
       <label class="lbl">Cuéntenos por qué desea trabajar con nosotros (máx. 50 caracteres)</label>
       <textarea id="letter" rows="2" class="nowrap"></textarea>
       <div id="letterCount" class="lbl">0/50 caracteres</div>
+      <div id="letterKeyboard" class="virtual-keyboard"></div>
     </section>
 
     <!-- 5 -->
@@ -101,7 +101,7 @@
     </section>
 
     <!-- Contenedor de la opción de mute "robada" -->
-    <div id="mute-container">
+      <div id="mute-container">
       <img src="img/thief.png" alt="Ladrón" id="thief-img">
       <button id="mute-btn">Mutear Canción</button>
     </div>
