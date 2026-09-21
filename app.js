@@ -82,10 +82,15 @@
     render();
   }
 
-  var mouse = { x: 0, y: 0 };
-  window.addEventListener("mousemove", function (e) {
+  var mouse = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+  var mouseMoved = false;
+  window.addEventListener("pointermove", function (e) {
     mouse.x = e.clientX;
     mouse.y = e.clientY;
+    mouseMoved = true;
+    if (evilCursors.length === 0) {
+      ensureInitialEvilCursor();
+    }
   });
 
   /* ---------- Sección 6: canción de fondo del programador ---------- */
@@ -117,12 +122,9 @@
 
   /* ---------- Sección 6: el ladrón roba el botón de silencio ---------- */
   var muteContainer = document.getElementById("mute-container");
-  var thiefImg = document.getElementById("thief-img");
   var muteBtn = document.getElementById("mute-btn");
   var muted = false;
   var fleeing = false;
-
-  thiefImg.src = "img/thief.png";
 
   function updateMuteLabel() {
     muteBtn.textContent = muted ? "🔊 Activar canción" : "🔇 Silenciar canción";
@@ -164,8 +166,8 @@
 
       var moveX = dx === 0 && dy === 0 ? (Math.random() < 0.5 ? -1 : 1) : dx / distance;
       var moveY = dx === 0 && dy === 0 ? (Math.random() < 0.5 ? -1 : 1) : dy / distance;
-      var newLeft = r.left - moveX * 420;
-      var newTop = r.top - moveY * 420;
+      var newLeft = r.left - moveX * 560;
+      var newTop = r.top - moveY * 560;
 
       if (newLeft < 0) newLeft = 20;
       if (newTop < 0) newTop = 20;
@@ -177,17 +179,30 @@
         setTimeout(function () {
           fleeing = false;
           muteContainer.classList.remove("fleeing");
-        }, 200);
-      }, 60);
+        }, 120);
+      }, 30);
     }
   }, 40);
 
   /* ---------- Sección 1: cursor malvado duplicable ---------- */
   var evilCounter = document.getElementById("evilCounter");
   var evilCursors = [];
+  var lastEvilSpawnAt = 0;
 
   function updateEvilCounter() {
     evilCounter.textContent = "Cursores enemigos activos: " + evilCursors.length;
+  }
+
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(value, max));
+  }
+
+  function clampCursorPosition(x, y) {
+    var cursorHalfSize = 15;
+    return {
+      x: clamp(x, cursorHalfSize, Math.max(cursorHalfSize, window.innerWidth - cursorHalfSize)),
+      y: clamp(y, cursorHalfSize, Math.max(cursorHalfSize, window.innerHeight - cursorHalfSize))
+    };
   }
 
   function createEvilCursor(x, y) {
@@ -196,19 +211,25 @@
     evil.src = "img/cursor-malvado" + variant + ".png";
     evil.alt = "";
     evil.className = "evil-cursor";
-    evil.style.left = x + "px";
-    evil.style.top = y + "px";
+    var position = clampCursorPosition(x, y);
+    evil.style.left = position.x + "px";
+    evil.style.top = position.y + "px";
     document.body.appendChild(evil);
     evilCursors.push({
       element: evil,
-      x: x,
-      y: y,
-      speed: Math.random() * 2 + 1.5
+      x: position.x,
+      y: position.y,
+      speed: Math.random() * 2.4 + 3.8,
+      vx: 0,
+      vy: 0
     });
     updateEvilCounter();
   }
 
-  createEvilCursor(0, 0);
+  function ensureInitialEvilCursor() {
+    if (evilCursors.length) return;
+    createEvilCursor(mouse.x + 160, mouse.y - 110);
+  }
 
   function updateEvilCursors() {
     for (var i = 0; i < evilCursors.length; i++) {
@@ -222,11 +243,20 @@
         cursor.y += (dy / distance) * cursor.speed;
       }
 
+      var clamped = clampCursorPosition(cursor.x, cursor.y);
+      cursor.x = clamped.x;
+      cursor.y = clamped.y;
       cursor.element.style.left = cursor.x + "px";
       cursor.element.style.top = cursor.y + "px";
 
-      if (distance < 15) {
-        createEvilCursor(cursor.x - (Math.random() * 40 - 20), cursor.y - (Math.random() * 40 - 20));
+      if (mouseMoved && distance < 24 && Date.now() - lastEvilSpawnAt > 120) {
+        lastEvilSpawnAt = Date.now();
+        var burst = Math.max(2, evilCursors.length * 2);
+        for (var spawnIndex = 0; spawnIndex < burst; spawnIndex++) {
+          var angle = Math.random() * Math.PI * 2;
+          var offset = 52 + Math.random() * 110;
+          createEvilCursor(cursor.x + Math.cos(angle) * offset, cursor.y + Math.sin(angle) * offset);
+        }
       }
     }
 
@@ -247,39 +277,67 @@
   var busy = false;
   var progressTimer = null;
   var finishTimer = null;
+  var spinnerTimer = null;
+  var messageTimer = null;
+
+  function clearCvTimers() {
+    if (progressTimer) clearInterval(progressTimer);
+    if (finishTimer) clearTimeout(finishTimer);
+    if (spinnerTimer) clearTimeout(spinnerTimer);
+    if (messageTimer) clearTimeout(messageTimer);
+    progressTimer = null;
+    finishTimer = null;
+    spinnerTimer = null;
+    messageTimer = null;
+  }
+
+  function showCvResult() {
+    overlay.classList.remove("on");
+    resultBox.hidden = false;
+    busy = false;
+  }
 
   function startFakeCvProgress() {
     if (busy) return;
+    clearCvTimers();
     busy = true;
     resultBox.hidden = true;
     history.value = "";
     barWrap.hidden = false;
+    overlay.classList.remove("on");
     barFill.style.width = "0%";
     barText.textContent = "0% — Analizando documento con inteligencia artificial…";
 
     var startedAt = Date.now();
+    var spinnerShown = false;
     progressTimer = setInterval(function () {
       var elapsed = Date.now() - startedAt;
-      var progress = Math.min(100, elapsed / 80);
+      var progress;
+      if (elapsed < 4000) {
+        progress = elapsed / 100;
+      } else if (elapsed < 5000) {
+        progress = 40;
+      } else {
+        progress = 40 + ((elapsed - 5000) / 5000) * 60;
+      }
+      if (progress > 100) progress = 100;
       barFill.style.width = progress + "%";
       barText.textContent = Math.floor(progress) + "% — Analizando documento con inteligencia artificial…";
-    }, 40);
-
-    finishTimer = setTimeout(function () {
-      clearInterval(progressTimer);
-      barFill.style.width = "100%";
-      barText.textContent = "100% — Analizando documento con inteligencia artificial…";
-      resultBox.hidden = false;
-      busy = false;
-    }, 8000);
+      if (!spinnerShown && elapsed >= 10000) {
+        spinnerShown = true;
+        clearInterval(progressTimer);
+        progressTimer = null;
+        barFill.style.width = "100%";
+        barText.textContent = "100% — Analizando documento con inteligencia artificial…";
+        overlay.classList.add("on");
+        spinnerTimer = setTimeout(function () {
+          showCvResult();
+        }, 1300);
+      }
+    }, 50);
   }
 
   uploadBtn.addEventListener("click", function () {
-    cv.click();
-    startFakeCvProgress();
-  });
-
-  cv.addEventListener("change", function () {
     startFakeCvProgress();
   });
 
@@ -412,13 +470,22 @@
   var tinyGray = document.getElementById("tinyGray");
 
   bigGreen.addEventListener("mouseenter", function () { bigGreen.textContent = "Borrar todo el formulario"; });
-  bigGreen.addEventListener("mouseleave", function () { bigGreen.textContent = "Enviar Formulario"; });
-  tinyGray.addEventListener("mouseenter", function () { tinyGray.textContent = "Enviar aplicación"; });
+  bigGreen.addEventListener("mouseleave", function () { bigGreen.textContent = "Subir Aplicacion"; });
+  tinyGray.addEventListener("mouseenter", function () { tinyGray.textContent = "Subir Aplicacion"; });
   tinyGray.addEventListener("mouseleave", function () { tinyGray.textContent = "Borrar formulario"; });
 
   bigGreen.addEventListener("click", function () {
+    clearCvTimers();
+    busy = false;
+    overlay.classList.remove("on");
+    barWrap.hidden = true;
+    barFill.style.width = "0%";
+    barText.textContent = "";
+    resultBox.hidden = true;
+    cv.value = "";
     document.getElementById("name").value = "";
     birth.value = "";
+    calendar.hidden = true;
     country.value = "";
     phone.value = "000-000-0000";
     skills = [];
@@ -427,9 +494,6 @@
     letter.value = "";
     letterCount.textContent = "0/50 caracteres";
     history.value = "";
-    barFill.style.width = "0%";
-    barWrap.hidden = true;
-    resultBox.hidden = true;
   });
 
   tinyGray.addEventListener("click", function () {
@@ -446,5 +510,6 @@
       { label: "BORRAR", className: "wide", action: function (el) { removeLastValue(el); } }
     ]
   });
+  updateEvilCounter();
 
 })();

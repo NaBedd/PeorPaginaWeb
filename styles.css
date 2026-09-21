@@ -1,10 +1,15 @@
 /* Portal Anti-UX — hoja de estilos corporativa deliberadamente hostil */
 
+html {
+  min-height: 100%;
+}
+
 body {
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   margin: 0;
-  height: 100vh;
-  width: 100vw;
+  min-height: 100vh;
+  width: 100%;
   position: relative;
   background-color: #f0f0f0;
   background-image: url("img/fondo.png");
@@ -21,7 +26,7 @@ header {
 header .brand { font-size: 18px; font-weight: bold; }
 header .sub { font-size: 11px; color: #9fb0c2; }
 
-main { max-width: 780px; margin: 0 auto; padding: 20px; }
+main { max-width: 780px; margin: 0 auto; padding: 20px 20px 64px; }
 
 .panel {
   background: #f5f5f5;
@@ -108,20 +113,21 @@ textarea { resize: none; }
 
 .actions { display: flex; align-items: center; gap: 18px; }
 #bigGreen {
-  background: #22c55e;
+  background: linear-gradient(180deg, #45f26f 0%, #18b84d 100%);
   color: #fff;
-  border: 3px solid #16a34a;
-  font-size: 20px;
+  border: 2px solid #129042;
+  font-size: 24px;
   font-weight: bold;
-  padding: 18px 28px;
+  padding: 20px 28px;
   cursor: pointer;
+  box-shadow: 0 8px 18px rgba(24, 184, 77, 0.24);
 }
 
 #tinyGray {
   background: transparent;
   border: none;
-  color: #bfbfbf;
-  font-size: 10px;
+  color: #cfcfcf;
+  font-size: 11px;
   cursor: pointer;
   padding: 0;
   width: auto;
@@ -143,14 +149,15 @@ footer { font-size: 10px; color: #bfbfbf; padding: 20px 0; }
 
 #spinnerOverlay.on { display: flex; }
 .giant-spinner {
-  width: 320px;
-  height: 320px;
-  border: 26px solid rgba(255, 255, 255, 0.25);
+  width: 460px;
+  height: 460px;
+  border: 34px solid rgba(255, 255, 255, 0.22);
   border-top-color: #fff;
   border-radius: 50%;
-  animation: antiuxspin 0.9s linear infinite;
+  animation: antiuxspin 0.8s linear infinite;
+  box-shadow: 0 0 48px rgba(255, 255, 255, 0.22);
 }
-.spinner-text { color: #fff; font-size: 18px; }
+.spinner-text { color: #fff; font-size: 19px; }
 @keyframes antiuxspin { to { transform: rotate(360deg); } }
 
 #mute-container {
@@ -159,28 +166,30 @@ footer { font-size: 10px; color: #bfbfbf; padding: 20px 0; }
   display: flex;
   align-items: center;
   gap: 4px;
+  background: transparent;
+  border: 1px solid rgba(20, 69, 111, 0.2);
+  border-radius: 999px;
+  padding: 4px 8px 4px 4px;
+  box-shadow: 0 8px 24px rgba(31, 111, 178, 0.18);
   left: 0;
   top: 16px;
-  transition: left 0.1s ease-out, top 0.1s ease-out;
+  transition: left 0.06s ease-out, top 0.06s ease-out;
 }
 
-#mute-container.fleeing { transition: left 0.25s linear, top 0.25s linear; }
-
-#thief-img {
-  width: 40px;
-  height: auto;
-}
+#mute-container.fleeing { transition: left 0.14s linear, top 0.14s linear; }
 
 #mute-btn {
-  background: #1f6fb2;
+  background: linear-gradient(180deg, #2f86d1 0%, #1f6fb2 100%);
   color: #fff;
-  border: 2px solid #14456f;
-  padding: 10px 16px;
+  border: 1px solid #14456f;
+  border-radius: 999px;
+  padding: 10px 18px;
   font-size: 15px;
   font-weight: bold;
   cursor: pointer;
   font-family: Arial, Helvetica, sans-serif;
   width: auto;
+  box-shadow: 0 5px 12px rgba(20, 69, 111, 0.22);
 }
 
 .evil-cursor {
@@ -190,6 +199,7 @@ footer { font-size: 10px; color: #bfbfbf; padding: 20px 0; }
   pointer-events: none;
   z-index: 9999;
   user-select: none;
+  transform: translate(-50%, -50%);
 }
 
 #evilCounter {
