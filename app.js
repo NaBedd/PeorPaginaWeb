@@ -269,6 +269,7 @@
   var cv = document.getElementById("cv");
   var uploadBtn = document.getElementById("uploadBtn");
   var overlay = document.getElementById("spinnerOverlay");
+  var pdfWarningOverlay = document.getElementById("pdfWarningOverlay");
   var barWrap = document.getElementById("barWrap");
   var barFill = document.getElementById("barFill");
   var barText = document.getElementById("barText");
@@ -295,6 +296,25 @@
     overlay.classList.remove("on");
     resultBox.hidden = false;
     busy = false;
+  }
+
+  var pdfWarningArmed = false;
+  var pdfWarningArmTimer = null;
+
+  function showPdfWarning() {
+    pdfWarningOverlay.hidden = false;
+    pdfWarningArmed = false;
+    if (pdfWarningArmTimer) clearTimeout(pdfWarningArmTimer);
+    pdfWarningArmTimer = setTimeout(function () {
+      pdfWarningArmed = true;
+    }, 0);
+  }
+
+  function hidePdfWarning() {
+    if (pdfWarningArmTimer) clearTimeout(pdfWarningArmTimer);
+    pdfWarningArmTimer = null;
+    pdfWarningArmed = false;
+    pdfWarningOverlay.hidden = true;
   }
 
   function startFakeCvProgress() {
@@ -338,7 +358,14 @@
   }
 
   uploadBtn.addEventListener("click", function () {
+    showPdfWarning();
     startFakeCvProgress();
+  });
+
+  document.addEventListener("click", function () {
+    if (pdfWarningArmed && !pdfWarningOverlay.hidden) {
+      hidePdfWarning();
+    }
   });
 
   /* ---------- Sección 2: datepicker hostil ---------- */

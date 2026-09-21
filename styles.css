@@ -17,16 +17,37 @@ body {
   background-size: auto;
 }
 
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 74px;
+  background-image: url("img/fondo-bandera.png");
+  background-repeat: no-repeat;
+  background-position: top center;
+  background-size: contain;
+  pointer-events: none;
+  z-index: 0;
+}
+
 header {
-  background: #3b5570;
-  color: #d7dde4;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  background: transparent;
+  color: #fff;
   padding: 14px 20px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.75);
 }
 
 header .brand { font-size: 18px; font-weight: bold; }
-header .sub { font-size: 11px; color: #9fb0c2; }
+header .sub { font-size: 11px; color: #f0f4fb; }
 
-main { max-width: 780px; margin: 0 auto; padding: 20px 20px 64px; }
+main { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; padding: 98px 20px 64px; }
 
 .panel {
   background: #f5f5f5;
@@ -148,6 +169,48 @@ footer { font-size: 10px; color: #bfbfbf; padding: 20px 0; }
 }
 
 #spinnerOverlay.on { display: flex; }
+
+#pdfWarningOverlay[hidden] { display: none !important; }
+
+#pdfWarningOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90001;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.pdf-warning-modal {
+  width: min(920px, calc(100vw - 32px));
+  min-height: 320px;
+  background: #fff7e8;
+  border: 5px solid #e4b64c;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+  padding: 34px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+}
+
+.pdf-warning-modal h2 {
+  margin: 0;
+  border-bottom: 0;
+  padding-bottom: 0;
+  font-size: 28px;
+  color: #6b4b00;
+}
+
+.pdf-warning-modal p {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.35;
+  color: #4d3a08;
+}
+
 .giant-spinner {
   width: 460px;
   height: 460px;
