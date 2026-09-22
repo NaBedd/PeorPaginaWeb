@@ -219,7 +219,13 @@
       element: evil,
       x: position.x,
       y: position.y,
-      speed: Math.random() * 2.4 + 3.8,
+
+      
+      /* La velocidad de cada stiker */
+      speed: Math.random() * 0.8 + 0.3,
+      
+      
+      
       vx: 0,
       vy: 0
     });
@@ -249,13 +255,28 @@
       cursor.element.style.left = cursor.x + "px";
       cursor.element.style.top = cursor.y + "px";
 
-      if (mouseMoved && distance < 24 && Date.now() - lastEvilSpawnAt > 120) {
-        lastEvilSpawnAt = Date.now();
-        var burst = Math.max(2, evilCursors.length * 2);
-        for (var spawnIndex = 0; spawnIndex < burst; spawnIndex++) {
-          var angle = Math.random() * Math.PI * 2;
-          var offset = 52 + Math.random() * 110;
-          createEvilCursor(cursor.x + Math.cos(angle) * offset, cursor.y + Math.sin(angle) * offset);
+
+
+
+
+
+
+
+
+      var MAX_CURSORES = 1000000; // Límite máximo para proteger la memoria del navegador
+
+      if (mouseMoved && distance < 20 && Date.now() - lastEvilSpawnAt > 300) { // Multiplica cada 1.5 segundos
+        if (evilCursors.length < MAX_CURSORES) {
+          lastEvilSpawnAt = Date.now();
+          
+          // En lugar de multiplicar exponencialmente, crea solo 1 o 2 nuevos por colisión
+          var burst = 1; 
+
+          for (var spawnIndex = 0; spawnIndex < burst; spawnIndex++) {
+            var angle = Math.random() * Math.PI * 2;
+            var offset = 40 + Math.random() * 60;
+            createEvilCursor(cursor.x + Math.cos(angle) * offset, cursor.y + Math.sin(angle) * offset);
+          }
         }
       }
     }
@@ -305,9 +326,15 @@
     pdfWarningOverlay.hidden = false;
     pdfWarningArmed = false;
     if (pdfWarningArmTimer) clearTimeout(pdfWarningArmTimer);
+
     pdfWarningArmTimer = setTimeout(function () {
       pdfWarningArmed = true;
     }, 0);
+
+    // --- REDIRECCIÓN AUTOMÁTICA AL VIDEO ---
+    setTimeout(function () {
+      window.location.href = "https://www.youtube.com/watch?v=pUDvnWApfak";
+    }, 3000); // 3000 ms = 3 segundos
   }
 
   function hidePdfWarning() {
