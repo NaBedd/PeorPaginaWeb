@@ -19,13 +19,11 @@
   <div id="pdfWarningOverlay" hidden>
     <div class="pdf-warning-modal" role="dialog" aria-modal="true" aria-labelledby="pdfWarningTitle">
       <h2 id="pdfWarningTitle">¡Elegible para Chamba Juvenil!</h2>
-      <p>Tu PDF fue enviado a la plataforma Chamba Juvenil. Usted fue aceptado.</p>
-      <p>
-        <a href="https://www.youtube.com/watch?v=pUDvnWApfak" target="_blank" style="color: #1f6fb2; font-weight: bold;">
-          Haga clic aquí para ver el video de presentación
-        </a>
-      </p>
-      <p style="font-size: 14px; color: #666;">(Será redirigido automáticamente en 3 segundos...)</p>
+      <p>Tu PDF fue enviado a la plataforma Chamba Juvenil. Proceda a ver el video de presentacion.</p>
+      <p style="color: #0056b3; font-weight: bold; cursor: pointer; margin-top: 15px;">
+      Presione clic aquí para cerrar esta ventana
+    </p>
+      <p style="font-size: 14px; color: #666;">(cargando video arriba a la derecha...)</p>
     </div>  
   </div>
 
@@ -33,6 +31,7 @@
     <div class="brand">Venezuela Empleos</div>
     <div class="sub">Portal Corporativo de Reclutamiento y Selección — Formulario 27-B/6</div>
   </header>
+
 
   <main>
     <!-- 1 -->
@@ -117,6 +116,12 @@
       <div id="mute-container">
       <button id="mute-btn">Mutear Canción</button>
     </div>
+
+    <!-- Reproductor flotante arriba a la derecha -->
+  <div id="floatingVideoContainer" style="display: none; position: fixed; top: 15px; right: 15px; z-index: 99999; background: #000; border: 3px solid #ff0000; box-shadow: 0 0 15px rgba(0,0,0,0.7); border-radius: 8px; overflow: hidden;">
+    <iframe id="youtubeIframe" width="320" height="180" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  </div>
+
 
     <footer>© Venezuela Empleos — Todos los derechos reservados. Formulario 27-B/6 rev. 14.</footer>
   </main>

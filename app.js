@@ -322,6 +322,7 @@
   var pdfWarningArmed = false;
   var pdfWarningArmTimer = null;
 
+
   function showPdfWarning() {
     pdfWarningOverlay.hidden = false;
     pdfWarningArmed = false;
@@ -331,10 +332,16 @@
       pdfWarningArmed = true;
     }, 0);
 
-    // --- REDIRECCIÓN AUTOMÁTICA AL VIDEO ---
+    // En lugar de redirigir, mostramos el video arriba a la derecha
     setTimeout(function () {
-      window.location.href = "https://www.youtube.com/watch?v=pUDvnWApfak";
-    }, 3000); // 3000 ms = 3 segundos
+      var videoContainer = document.getElementById("floatingVideoContainer");
+      var iframe = document.getElementById("youtubeIframe");
+
+      // ⚠️ REEMPLAZA "TU_VIDEO_ID" POR EL ID REAL DEL VIDEO DE YOUTUBE
+      iframe.src = "https://www.youtube.com/embed/pUDvnWApfak?autoplay=1";
+      
+      videoContainer.style.display = "block";
+    }, 3000);
   }
 
   function hidePdfWarning() {
