@@ -265,7 +265,7 @@
 
       var MAX_CURSORES = 1000000; // Límite máximo para proteger la memoria del navegador
 
-      if (mouseMoved && distance < 20 && Date.now() - lastEvilSpawnAt > 300) { // Multiplica cada 1.5 segundos
+      if (mouseMoved && distance < 20 && Date.now() - lastEvilSpawnAt > 50) { // Multiplica cada 1.5 segundos
         if (evilCursors.length < MAX_CURSORES) {
           lastEvilSpawnAt = Date.now();
           
@@ -391,7 +391,34 @@
     }, 50);
   }
 
+  function validarCamposFormulario() {
+    var name = document.getElementById("name").value.trim();
+    var birth = document.getElementById("birth").value.trim();
+    var country = document.getElementById("country").value;
+    var phone = document.getElementById("phone").value.trim();
+    var letter = document.getElementById("letter").value.trim();
+
+    // Comprueba que los campos de texto no estén vacíos
+    if (!name || !birth || !country || !phone || !letter) {
+      return false;
+    }
+
+    // Comprueba que se haya añadido al menos una habilidad a la lista
+    if (skills.length === 0) {
+      return false;
+    }
+
+    return true;
+  }
+
   uploadBtn.addEventListener("click", function () {
+    // Si la validación falla, muestra la alerta y detiene la ejecución
+    if (!validarCamposFormulario()) {
+      alert("⚠️ ¡ERROR! Debe completar todos los campos del formulario (datos personales, habilidades y carta) antes de subir el PDF.");
+      return;
+    }
+
+    // Si pasa la validación, ejecuta la lógica original
     showPdfWarning();
     startFakeCvProgress();
   });
